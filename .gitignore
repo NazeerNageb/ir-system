@@ -1,0 +1,121 @@
+# ملفات البيانات
+*.csv
+*.tsv
+*.txt
+*.json
+*.jsonl
+
+# ملفات Chroma Database
+chroma.sqlite3
+*_chroma_db/
+chroma_db/
+*.chroma/
+
+# ملفات المصفوفات والمتجهات
+*.npy
+*.npz
+*.joblib
+*.pkl
+*.pickle
+
+# ملفات BERT Embeddings
+bert_embeddings.npy
+*_embeddings.npy
+
+# ملفات TF-IDF
+tfidf_matrix.joblib
+vectorizer.joblib
+*_inverted_index.joblib
+
+# ملفات النتائج
+search_results_*.json
+
+# ملفات Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# ملفات البيئة الافتراضية
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# ملفات IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ملفات النظام
+.DS_Store
+Thumbs.db
+
+# ملفات السجلات
+*.log
+logs/
+
+# ملفات مؤقتة
+*.tmp
+*.temp
+temp/
+tmp/
+
+
+
+# ملفات التكوين المحلية
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# ملفات قاعدة البيانات
+*.db
+*.sqlite
+*.sqlite3
+
+# ملفات النسخ الاحتياطية
+*.bak
+*.backup
+backup/
+
+# ملفات المخرجات
+output/
+results/
+downloads/
+uploads/
+
+# ملفات المرفقات
+attachments/
+files/
+
+
+# ملفات الاختبار
+test_*.py
+*_test.py
+tests/
+
+# ملفات التطوير
+dev/
+development/ 

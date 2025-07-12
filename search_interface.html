@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام استرجاع المعلومات - واجهة البحث</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .search-form {
+            padding: 40px;
+            background: #f8f9fa;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 1.1rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #4facfe;
+            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+        }
+
+        .method-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .method-option {
+            position: relative;
+        }
+
+        .method-option input[type="radio"] {
+            display: none;
+        }
+
+        .method-option label {
+            display: block;
+            padding: 15px;
+            background: white;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .method-option input[type="radio"]:checked + label {
+            border-color: #4facfe;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.3);
+        }
+
+        .search-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .search-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4facfe;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .results {
+            padding: 40px;
+            display: none;
+        }
+
+        .results h2 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 1.8rem;
+            text-align: center;
+        }
+
+        .result-item {
+            background: white;
+            border: 1px solid #e1e5e9;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .result-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .doc-id {
+            font-weight: 600;
+            color: #4facfe;
+            font-size: 1.1rem;
+        }
+
+        .score {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 1px solid #fcc;
+        }
+
+        .success {
+            background: #efe;
+            color: #363;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 1px solid #cfc;
+        }
+
+        .view-doc-btn {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .view-doc-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 10px rgba(79, 172, 254, 0.3);
+        }
+
+        .modal {
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 0;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 900px;
+            max-height: 85vh;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            font-size: 1.3rem;
+        }
+
+        .close {
+            color: white;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+
+        .close:hover {
+            opacity: 0.7;
+        }
+
+        .modal-body {
+            padding: 20px;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        .document-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #4facfe;
+        }
+
+        .document-info p {
+            margin: 5px 0;
+            font-size: 0.95rem;
+        }
+
+        .document-content h4 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .content-text {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #4facfe;
+            line-height: 1.8;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-height: 400px;
+            overflow-y: auto;
+            font-size: 0.95rem;
+            color: #333;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .search-form, .results {
+                padding: 20px;
+            }
+            
+            .method-options {
+                grid-template-columns: 1fr;
+            }
+            .modal-content {
+                width: 95%;
+                margin: 10% auto;
+            }
+            
+            .modal-header h3 {
+                font-size: 1.1rem;
+            }
+            
+            .content-text {
+                font-size: 0.9rem;
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 نظام استرجاع المعلومات</h1>
+            <p>ابحث في مجموعات البيانات باستخدام طرق مختلفة</p>
+        </div>
+
+        <div class="search-form">
+            <form id="searchForm">
+                <div class="form-group">
+                    <label for="dataset">اختر مجموعة البيانات:</label>
+                    <select id="dataset" class="form-control" required>
+                        <option value="">-- اختر مجموعة البيانات --</option>
+                        <option value="antique">Antique Dataset</option>
+                        <option value="corpus">Corpus Dataset</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>اختر طريقة البحث:</label>
+                    <div class="method-options">
+                        <div class="method-option">
+                            <input type="radio" id="tfidf" name="method" value="tfidf">
+                            <label for="tfidf">TF-IDF</label>
+                        </div>
+                        <div class="method-option">
+                            <input type="radio" id="embedding" name="method" value="embedding">
+                            <label for="embedding">BERT Embedding</label>
+                        </div>
+                        <div class="method-option">
+                            <input type="radio" id="chroma" name="method" value="chroma">
+                            <label for="chroma">Chroma</label>
+                        </div>
+                        <div class="method-option">
+                            <input type="radio" id="hybrid" name="method" value="hybrid">
+                            <label for="hybrid">Hybrid (TF-IDF + Embedding)</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="query">أدخل استعلام البحث:</label>
+                    <textarea id="query" class="form-control" rows="4" placeholder="اكتب استعلام البحث هنا..." required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="topK">عدد النتائج المطلوبة:</label>
+                    <input type="number" id="topK" class="form-control" value="10" min="1" max="50">
+                </div>
+
+                <button type="submit" class="search-btn" id="searchBtn">
+                    🔍 ابدأ البحث
+                </button>
+            </form>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>جاري البحث... يرجى الانتظار</p>
+            </div>
+        </div>
+
+        <div class="results" id="results">
+            <h2>نتائج البحث</h2>
+            <div id="resultsList"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:8004';
+        
+        document.getElementById('searchForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const dataset = document.getElementById('dataset').value;
+            const method = document.querySelector('input[name="method"]:checked')?.value;
+            const query = document.getElementById('query').value.trim();
+            const topK = parseInt(document.getElementById('topK').value);
+            
+            // التحقق من المدخلات
+            if (!dataset || !method || !query) {
+                showError('يرجى ملء جميع الحقول المطلوبة');
+                return;
+            }
+            
+            // إظهار حالة التحميل
+            showLoading(true);
+            hideResults();
+            
+            try {
+                const requestBody = {
+                    query: query,
+                    dataset: dataset,
+                    top_k: topK
+                };
+                
+                let endpoint;
+                if (method === 'hybrid') {
+                    endpoint = '/search_query_hybrid';
+                } else {
+                    endpoint = '/search_query';
+                    requestBody.method = method;
+                }
+                
+                const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || `خطأ في الخادم: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                displayResults(data.result_docs, method, dataset);
+                
+            } catch (error) {
+                console.error('خطأ في البحث:', error);
+                showError(`خطأ في البحث: ${error.message}`);
+            } finally {
+                showLoading(false);
+            }
+        });
+        
+        function showLoading(show) {
+            const loading = document.getElementById('loading');
+            const searchBtn = document.getElementById('searchBtn');
+            
+            if (show) {
+                loading.style.display = 'block';
+                searchBtn.disabled = true;
+                searchBtn.textContent = 'جاري البحث...';
+            } else {
+                loading.style.display = 'none';
+                searchBtn.disabled = false;
+                searchBtn.textContent = '🔍 ابدأ البحث';
+            }
+        }
+        
+        function showError(message) {
+            const results = document.getElementById('results');
+            const resultsList = document.getElementById('resultsList');
+            
+            results.style.display = 'block';
+            resultsList.innerHTML = `<div class="error">❌ ${message}</div>`;
+        }
+        
+        function hideResults() {
+            document.getElementById('results').style.display = 'none';
+        }
+        
+        function displayResults(resultDocs, method, dataset) {
+            const results = document.getElementById('results');
+            const resultsList = document.getElementById('resultsList');
+            
+            if (!resultDocs || (Array.isArray(resultDocs) && resultDocs.length === 0) || 
+                (typeof resultDocs === 'object' && !Array.isArray(resultDocs) && Object.keys(resultDocs).length === 0)) {
+                resultsList.innerHTML = '<div class="success">✅ تم البحث بنجاح ولكن لم يتم العثور على نتائج</div>';
+                results.style.display = 'block';
+                return;
+            }
+            
+            const methodNames = {
+                'tfidf': 'TF-IDF',
+                'embedding': 'BERT Embedding',
+                'chroma': 'Chroma',
+                'hybrid': 'Hybrid (TF-IDF + Embedding)'
+            };
+            
+            let html = `
+                <div class="success">
+                    ✅ تم العثور على نتائج باستخدام ${methodNames[method]} في مجموعة ${dataset}
+                </div>
+            `;
+            
+            // معالجة خاصة لتنسيق Chroma
+            if (method === 'chroma' && typeof resultDocs === 'object' && resultDocs.ids) {
+                // تنسيق Chroma: {ids: [[...]], distances: [[...]], metadatas: [[...]], documents: [[...]]}
+                const ids = resultDocs.ids[0] || [];
+                const distances = resultDocs.distances[0] || [];
+                const documents = resultDocs.documents[0] || [];
+                
+                html += `<div class="success">تم العثور على ${ids.length} نتيجة</div>`;
+                
+                ids.forEach((docId, index) => {
+                    const score = distances[index] || 0;
+                    const documentContent = documents[index] || '';
+                    const formattedScore = typeof score === 'number' ? score.toFixed(4) : score;
+                    
+                    html += `
+                        <div class="result-item">
+                            <div class="result-header">
+                                <span class="doc-id">${docId}</span>
+                                <span class="score">${formattedScore}</span>
+                            </div>
+                            <div class="result-content">
+                                <strong>الترتيب:</strong> ${index + 1}
+                                <br>
+                                <strong>معرف المستند:</strong> ${docId}
+                                <br>
+                                <strong>محتوى المستند:</strong> ${documentContent ? documentContent.substring(0, 100) + '...' : 'لا يوجد محتوى متاح'}
+                                <br>
+                                <button class="view-doc-btn" onclick="viewDocument('${docId}', '${dataset}')">
+                                    🔗 عرض محتوى المستند الكامل
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                // معالجة التنسيقات الأخرى (TF-IDF, Embedding, Hybrid)
+                const docsArray = Array.isArray(resultDocs) ? resultDocs : [resultDocs];
+                
+                html += `<div class="success">تم العثور على ${docsArray.length} نتيجة</div>`;
+                
+                docsArray.forEach((doc, index) => {
+                    let docId, score;
+                    
+                    // معالجة التنسيقات المختلفة للنتائج
+                    if (Array.isArray(doc)) {
+                        // تنسيق: [doc_id, score]
+                        docId = doc[0];
+                        score = doc[1];
+                    } else if (typeof doc === 'object' && doc !== null) {
+                        // تنسيق: {doc_id, score}
+                        docId = doc.doc_id;
+                        score = doc.score;
+                    } else {
+                        // تنسيق غير متوقع
+                        docId = String(doc);
+                        score = 0;
+                    }
+                    
+                    const formattedScore = typeof score === 'number' ? score.toFixed(4) : score;
+                    
+                    html += `
+                        <div class="result-item">
+                            <div class="result-header">
+                                <span class="doc-id">${docId}</span>
+                                <span class="score">${formattedScore}</span>
+                            </div>
+                            <div class="result-content">
+                                <strong>الترتيب:</strong> ${index + 1}
+                                <br>
+                                <strong>معرف المستند:</strong> ${docId}
+                                <br>
+                                <button class="view-doc-btn" onclick="viewDocument('${docId}', '${dataset}')">
+                                    🔗 عرض محتوى المستند
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            
+            resultsList.innerHTML = html;
+            results.style.display = 'block';
+        }
+        
+        // دالة جديدة لعرض محتوى المستند
+        async function viewDocument(docId, dataset) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/get_document`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        doc_id: docId,
+                        dataset: dataset
+                    })
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || `خطأ في جلب المستند: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                // إنشاء نافذة منبثقة لعرض المستند
+                const modal = document.createElement('div');
+                modal.className = 'modal';
+                modal.innerHTML = `
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3>محتوى المستند: ${docId}</h3>
+                            <span class="close" onclick="this.parentElement.parentElement.parentElement.remove()">&times;</span>
+                        </div>
+                        <div class="modal-body">
+                            <div class="document-info">
+                                <p><strong>معرف المستند:</strong> ${data.doc_id}</p>
+                                <p><strong>مجموعة البيانات:</strong> ${data.dataset}</p>
+                            </div>
+                            <div class="document-content">
+                                <h4>المحتوى:</h4>
+                                <div class="content-text">${data.content || 'لا يوجد محتوى متاح'}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(modal);
+                
+            } catch (error) {
+                console.error('خطأ في جلب المستند:', error);
+                alert(`خطأ في جلب المستند: ${error.message}`);
+            }
+        }
+        
+        // تحسين تجربة المستخدم
+        document.getElementById('query').addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'Enter') {
+                document.getElementById('searchForm').dispatchEvent(new Event('submit'));
+            }
+        });
+        
+        // إضافة تأثيرات بصرية
+        document.querySelectorAll('.method-option label').forEach(label => {
+            label.addEventListener('mouseenter', function() {
+                if (!this.previousElementSibling.checked) {
+                    this.style.transform = 'translateY(-1px)';
+                    this.style.boxShadow = '0 3px 10px rgba(79, 172, 254, 0.2)';
+                }
+            });
+            
+            label.addEventListener('mouseleave', function() {
+                if (!this.previousElementSibling.checked) {
+                    this.style.transform = 'translateY(0)';
+                    this.style.boxShadow = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html> 
